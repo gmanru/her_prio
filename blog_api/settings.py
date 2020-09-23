@@ -70,7 +70,7 @@ ACCOUNT_LOGOUT_REDIRECT_URL ='/vktest/'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': ['templates'],
+        'DIRS': [os.path.join(BASE_DIR,'build')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -145,7 +145,7 @@ STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 SITE_ID =1
 
 FILE_CHARSET = 'utf-8'
-'''STATICFILES_DIRS = [
-    os.path.join(BASE_DIR, 'static'),
-]'''
+STATICFILES_DIRS = [
+    os.path.join(BASE_DIR, 'build/static'),
+]
 
