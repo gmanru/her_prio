@@ -144,7 +144,8 @@ STATICFILES_STORAGE = 'whitenoise.django.GzipManifestStaticFilesStorage'
 
 SITE_ID =1
 
-STATICFILES_DIRS = [
+FILE_CHARSET = 'utf-8'
+'''STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'static'),
-]
+]'''
 
