@@ -18,7 +18,6 @@ python3 manage.py migrate
 
 настройки js
 
-заходишь в blog_app
 
 npm i 
 
