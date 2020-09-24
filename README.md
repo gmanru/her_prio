@@ -2,13 +2,12 @@
 
 создаешь новую папку
 
-в ней качаешь все отсюда git clone https://github.com/gmanru/prio.git
 
 создаешь виртуальное окружение python3 -m venv env
 
 source env/bin/activate
 
-переходишь в папку backend/blog_api/
+переходишь в папку blog_api/
 
 делаешь бд с миграциями
 
@@ -19,7 +18,7 @@ python3 manage.py migrate
 
 настройки js
 
-заходишь в frontend/blog_app
+заходишь в blog_app
 
 npm i 
 
