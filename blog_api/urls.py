@@ -25,7 +25,7 @@ urlpatterns = [
     path('api/', include('blog.urls')),
     path('api/account/', include('account_main.urls')),
     path('accounts/', include('allauth.urls')),
-    re_path(r'^.*', TemplateView.as_view(template_name='index.html')),
+    # re_path(r'^.*', TemplateView.as_view(template_name='tiny.html')),
     path('vktest/', views.vktest, name='vktest'),
 ]+ static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT) + static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     

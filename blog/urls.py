@@ -10,4 +10,5 @@ urlpatterns = [
     path('search/', views.search, name='search'),
     path('addcomment/', views.addcomment, name='addcomment'),
     path('fetchcomments/', views.fetchAllComments, name='fetchAllComments'),
+    path('vktest/', views.vktest, name='vktest'),
 ]

@@ -1,11 +1,18 @@
 from django.shortcuts import render
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
+# from django.views.generic import CreateView
 from account_main.models import User
 import jwt
 import bcrypt
 import json
 import sys
+
+from django.utils.decorators import method_decorator
+
+from account_main import forms
+import datetime
+import json
 
 # Create your views here.
 @csrf_exempt
@@ -62,7 +69,7 @@ def signin(request):
 
             user = User.objects.filter(username=username)
             if len(user) == 0:
-                return JsonResponse({'err':'true', 'message' : 'User Does not Exists'})
+                return JsonResponse({'err':'true', 'message' : 'User Does not Exist'})
             else:
                 user_details = list(user.values())
                 # print(user_details[0]['password'])
@@ -92,4 +99,44 @@ def signin(request):
                     return JsonResponse({'err':'true', 'message' : 'Wrong Password'})
         except Exception as err:
             errMessage = f"Oops! {sys.exc_info()[1]}"
-            return JsonResponse({'err':'true', 'message' : errMessage}) 
+            return JsonResponse({'err':'true', 'message' : errMessage})
+
+
+# @method_decorator(csrf_exempt, name='dispatch')
+# class UserDataView(CreateView):
+#     model = User
+#     form_class = forms.UserDataForm
+
+@csrf_exempt
+def set_user_data(request):
+    request_params = json.loads(request.body.decode('utf-8'))
+    print("FFFFFFFF:     " ,request_params)
+    if request.method == 'POST':
+        user_id = request_params.get("user_id")
+        first_name = request_params.get("first_name")
+        last_name = request_params.get("last_name")
+        username = "USERNAME"
+        email = request_params.get("email")
+        
+        birthday = '2000-1-1'
+        if request_params.get("birthday"):
+            birthday = date_obj = datetime.datetime.strptime(request_params.get("birthday"), "%Y/%m/%d")
+
+        phone = request_params.get("phone")
+        avatar = request_params.get("avatar")
+
+        
+        user = User(
+            user_id=user_id,
+            first_name=first_name,
+            last_name=last_name,
+            username=username,
+            email=email,
+            birthday=birthday,
+            phone=phone,
+            avatar=avatar
+        )
+        
+        # user.save()
+
+        return JsonResponse({'success': True})

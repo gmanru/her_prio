@@ -3,6 +3,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.serializers import serialize
 from blog.models import Article, Comment
+from account_main.models import User
 from blog.forms import ArticleForm
 from django.forms.models import modelform_factory
 from functools import wraps
@@ -12,6 +13,9 @@ import sys
 # Create your views here.
 
 def vktest(request):
+    asd = User.objects.all()
+    for user in asd:
+        print(asd)
     return render(request, 'vktest.html')
 
 def allpost(request):

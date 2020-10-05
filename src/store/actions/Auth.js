@@ -1,5 +1,6 @@
 import * as actionTypes from './ActionsType'
 import axios from 'axios'
+import VK from 'vk-openapi'
 import { Redirect } from 'react-router-dom'
 
 export const authStart = () => {
@@ -143,6 +144,188 @@ export const search = (query) => {
                 dispatch(searchFail(error.message))
             })
     }
+}
+
+
+export const handleLogin = (isLoggedIn) => {
+    VK.init({
+        // apiId: '7519418'
+        apiId: 7320659
+    });
+    return dispatch => {
+        dispatch({
+            type: actionTypes.LOGIN_REQUEST
+        }
+    )
+
+    //eslint-disable-next-line no-undef
+    VK.Auth.login((r) => {
+        if (r.session) {
+            const { expire, mid, secret, sid, sig, user } = r.session;
+            const params = { expire, mid, secret, sid, sig };
+            const token = Array.from(Object.keys(params), param => {
+                return `${param}=${params[param]}`;
+            }).join('&');
+
+            isLoggedIn = true
+            localStorage.setItem("token", token)
+
+            var avatar = "", birthday = "", email = "";
+
+            VK.Api.call('photos.getAll', { extended: 1, count: 100, offset: 0, v: '5.80' }, r2 => {
+                if (typeof r2.response.items !== 'undefined' && r2.response.items.length > 0) {
+                    avatar = r2.response.items[0].sizes[0].url
+                }
+            });
+
+            VK.Api.call('users.get', {user_ids: r.session.mid, v: '5.80', fields: ['bdate', 'email']}, function(r3) {
+                if(r3.response) {
+                    birthday = r3.response[0].bdate
+                }
+            });
+
+            axios.post("http://localhost:8000/api/account/set_user_data/", {
+                uid: r.session.mid,
+                first_name: r.session.user.first_name,
+                last_name: r.session.user.last_name,
+                birthday: birthday,
+                email: email,
+                avatar: avatar
+            })
+
+            dispatch({
+                type: actionTypes.LOGIN_SUCCESS,
+                payload: avatar,
+                isLoggedIn: isLoggedIn, 
+                avatar: avatar
+            })
+        } else {
+            dispatch({
+                type: actionTypes.LOGIN_FAIL,
+                isLoggedIn: isLoggedIn,
+                error: true,
+                payload: new Error('Ошибка авторизации')
+            })
+        }
+    }, 22) // запрос прав на доступ к photo
+  }
+}
+
+export const handleLogout = (isLoggedIn) => {
+    VK.init({
+        // apiId: '7519418'
+        apiId: 7320659
+    });
+    return dispatch => {
+        dispatch({
+        type: actionTypes.LOGIN_REQUEST
+        })
+
+        //eslint-disable-next-line no-undef
+        VK.Auth.logout() // запрос прав на доступ к photo
+        dispatch({
+            type: actionTypes.LOGOUT,
+            isLoggedIn: false
+        })
+        localStorage.removeItem("token")
+    }
+}
+
+export const handleSession = () => {
+    VK.init({
+        // apiId: '7519418'
+        apiId: 7320659
+    });
+    return dispatch => {
+        dispatch({
+        type: actionTypes.LOGIN_REQUEST
+        })
+
+        //eslint-disable-next-line no-undef
+        VK.Auth.getLoginStatus(function(response){
+            if(response.session)
+            {
+                // пользователь авторизован
+                dispatch({
+                    type: actionTypes.LOGIN_REQUEST,
+                    isLoggedIn: true
+                })
+            }
+            else
+            {
+                // пользователь не авторизован
+                dispatch({
+                    type: actionTypes.LOGIN_REQUEST,
+                    isLoggedIn: false
+                })
+            }
+        });
+    }
+}
+
+
+let photosArr = []
+let cached = false
+
+function makeYearPhotos(photos, selectedYear) {
+  let createdYear,
+    yearPhotos = []
+
+  photos.forEach(item => {
+    createdYear = new Date(item.date * 1000).getFullYear()
+    if (createdYear === selectedYear) {
+      yearPhotos.push(item)
+    }
+  })
+
+  yearPhotos.sort((a, b) => b.likes.count - a.likes.count)
+
+  return yearPhotos
+}
+
+function getMorePhotos(offset, count, year, dispatch) {
+  //eslint-disable-next-line no-undef
+  VK.Api.call('photos.getAll', { extended: 1, count: count, offset: offset, v: '5.80' }, r => {
+    try {
+      photosArr = photosArr.concat(r.response.items)
+      if (offset <= r.response.count) {
+        offset += 200 // максимальное количество фото которое можно получить за 1 запрос
+        getMorePhotos(offset, count, year, dispatch)
+      } else {
+        let photos = makeYearPhotos(photosArr, year)
+        cached = true
+        dispatch({
+          type: actionTypes.GET_PHOTOS_SUCCESS,
+          payload: photos
+        })
+      }
+    } catch (e) {
+      dispatch({
+        type: actionTypes.GET_PHOTOS_FAIL,
+        error: true,
+        payload: new Error(e)
+      })
+    }
+  })
+}
+
+export const getPhotos = (year) => {
+  return dispatch => {
+    dispatch({
+      type: actionTypes.GET_PHOTOS_REQUEST,
+      payload: year
+    })
+
+    if (cached) {
+      let photos = makeYearPhotos(photosArr, year)
+      dispatch({
+        type: actionTypes.GET_PHOTOS_SUCCESS,
+        payload: photos
+      })
+    } else {
+      getMorePhotos(0, 200, year, dispatch)
+    }
+  }
 }
 
 // export const authCheckState = () => {

@@ -23,9 +23,11 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 SECRET_KEY = 'zkjrw26dm5hh(z46vqzb7=r)(@r2*wllg_a42j+h@kico$g61r'
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+# DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['priozersk-ru.herokuapp.com']
+# ALLOWED_HOSTS = ['priozersk-ru.herokuapp.com']
+ALLOWED_HOSTS = ['127.0.0.1', 'localhost']
 
 
 # Application definition
@@ -70,7 +72,7 @@ ACCOUNT_LOGOUT_REDIRECT_URL ='/vktest/'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [os.path.join(BASE_DIR,'build')],
+        'DIRS': [os.path.join(BASE_DIR,'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
