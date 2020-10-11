@@ -1,7 +1,7 @@
 import * as actionTypes from './ActionsType'
 import axios from 'axios'
 import VK from 'vk-openapi'
-import { Redirect } from 'react-router-dom'
+import axiosInstance from "./axiosApi"
 
 export const authStart = () => {
     return {
@@ -148,66 +148,170 @@ export const search = (query) => {
 
 
 export const handleLogin = (isLoggedIn) => {
-    VK.init({
-        // apiId: '7519418'
-        apiId: 7320659
-    });
+    // VK.init({
+    //     // apiId: '7519418'
+    //     apiId: 7320659
+    // });
     return dispatch => {
         dispatch({
             type: actionTypes.LOGIN_REQUEST
         }
     )
+    var avatar = "", birthday = "", email = "";
+    
 
-    //eslint-disable-next-line no-undef
-    VK.Auth.login((r) => {
-        if (r.session) {
-            const { expire, mid, secret, sid, sig, user } = r.session;
-            const params = { expire, mid, secret, sid, sig };
-            const token = Array.from(Object.keys(params), param => {
-                return `${param}=${params[param]}`;
-            }).join('&');
+    // axios.post('http://localhost:8000/api/account/login/')
+    axios.get('http://localhost:8000/api/account/lll/login/vk-oauth2')
+    .then((response) => {
+        debugger
+        // axiosInstance.defaults.headers['Authorization'] = "JWT " + response.data.access;
+        // localStorage.setItem('access_token', response.data.access);
+        // localStorage.setItem('refresh_token', response.data.refresh);
+        // if (response.data.success == false)
+        //     alert("Произошла ошибка!")
+        // else {
+        //     sessionStorage.setItem("token", token)
+        //     isLoggedIn = true
+        //     localStorage.setItem("token", token)
 
-            isLoggedIn = true
-            localStorage.setItem("token", token)
+        //     VK.Api.call('photos.getAll', { extended: 1, count: 100, offset: 0, v: '5.80' }, r2 => {
+        //         if (typeof r2.response.items !== 'undefined' && r2.response.items.length > 0) {
+        //             avatar = r2.response.items[0].sizes[0].url
+        //             VK.Api.call('users.get', {user_ids: r.session.mid, v: '5.80', fields: ['bdate', 'email']}, function(r3) {
+        //                 if(r3.response) {
+        //                     birthday = r3.response[0].bdate
+        //                     function formatDate(date) {
+        //                         var d = new Date(date),
+        //                             month = '' + (d.getMonth() + 1),
+        //                             day = '' + d.getDate(),
+        //                             year = d.getFullYear();
+                            
+        //                         if (month.length < 2) 
+        //                             month = '0' + month;
+        //                         if (day.length < 2) 
+        //                             day = '0' + day;
+                            
+        //                         return [year, month, day].join('-');
+        //                     }
 
-            var avatar = "", birthday = "", email = "";
+        //                     var rrr = avatar
+        //                     debugger
+        //                     axios.post("http://localhost:8000/api/account/set_user_data/", {
+        //                         user_id: r.session.mid,
+        //                         first_name: r.session.user.first_name,
+        //                         last_name: r.session.user.last_name,
+        //                         birthday: formatDate(birthday),
+        //                         email: email,
+        //                         avatar: avatar,
+        //                         headers: {
+        //                             Authorization: `Token 27dbb4dd8299792c8c52022f829da4ecec22f437`
+        //                         }
+        //                     })
+        //                 }
+        //             });
+        //         }
+        //     });
 
-            VK.Api.call('photos.getAll', { extended: 1, count: 100, offset: 0, v: '5.80' }, r2 => {
-                if (typeof r2.response.items !== 'undefined' && r2.response.items.length > 0) {
-                    avatar = r2.response.items[0].sizes[0].url
-                }
-            });
+            
+        dispatch({
+            type: actionTypes.LOGIN_SUCCESS,
+            payload: avatar,
+            isLoggedIn: isLoggedIn, 
+            avatar: avatar
+        })
+        // }
+    })
+    .catch(error => {
+        console.log(error);
+        return;
+    });
 
-            VK.Api.call('users.get', {user_ids: r.session.mid, v: '5.80', fields: ['bdate', 'email']}, function(r3) {
-                if(r3.response) {
-                    birthday = r3.response[0].bdate
-                }
-            });
 
-            axios.post("http://localhost:8000/api/account/set_user_data/", {
-                uid: r.session.mid,
-                first_name: r.session.user.first_name,
-                last_name: r.session.user.last_name,
-                birthday: birthday,
-                email: email,
-                avatar: avatar
-            })
+    // //eslint-disable-next-line no-undef
+    // VK.Auth.login((r) => {
+    //     if (r.session) {
+    //         const { expire, mid, secret, sid, sig, user } = r.session;
+    //         const params = { expire, mid, secret, sid, sig };
+    //         const token = Array.from(Object.keys(params), param => {
+    //             return `${param}=${params[param]}`;
+    //         }).join('&');
+            
+    //         var avatar = "", birthday = "", email = "";
+    //         axiosInstance.post('/login', {
+    //             username: mid
+    //         })
+    //         .then((response) => {
+    //             debugger
+    //             axiosInstance.defaults.headers['Authorization'] = "JWT " + response.data.access;
+    //             localStorage.setItem('access_token', response.data.access);
+    //             localStorage.setItem('refresh_token', response.data.refresh);
+    //             // if (response.data.success == false)
+    //             //     alert("Произошла ошибка!")
+    //             // else {
+    //             //     sessionStorage.setItem("token", token)
+    //             //     isLoggedIn = true
+    //             //     localStorage.setItem("token", token)
 
-            dispatch({
-                type: actionTypes.LOGIN_SUCCESS,
-                payload: avatar,
-                isLoggedIn: isLoggedIn, 
-                avatar: avatar
-            })
-        } else {
-            dispatch({
-                type: actionTypes.LOGIN_FAIL,
-                isLoggedIn: isLoggedIn,
-                error: true,
-                payload: new Error('Ошибка авторизации')
-            })
-        }
-    }, 22) // запрос прав на доступ к photo
+    //             //     VK.Api.call('photos.getAll', { extended: 1, count: 100, offset: 0, v: '5.80' }, r2 => {
+    //             //         if (typeof r2.response.items !== 'undefined' && r2.response.items.length > 0) {
+    //             //             avatar = r2.response.items[0].sizes[0].url
+    //             //             VK.Api.call('users.get', {user_ids: r.session.mid, v: '5.80', fields: ['bdate', 'email']}, function(r3) {
+    //             //                 if(r3.response) {
+    //             //                     birthday = r3.response[0].bdate
+    //             //                     function formatDate(date) {
+    //             //                         var d = new Date(date),
+    //             //                             month = '' + (d.getMonth() + 1),
+    //             //                             day = '' + d.getDate(),
+    //             //                             year = d.getFullYear();
+                                    
+    //             //                         if (month.length < 2) 
+    //             //                             month = '0' + month;
+    //             //                         if (day.length < 2) 
+    //             //                             day = '0' + day;
+                                    
+    //             //                         return [year, month, day].join('-');
+    //             //                     }
+
+    //             //                     var rrr = avatar
+    //             //                     debugger
+    //             //                     axios.post("http://localhost:8000/api/account/set_user_data/", {
+    //             //                         user_id: r.session.mid,
+    //             //                         first_name: r.session.user.first_name,
+    //             //                         last_name: r.session.user.last_name,
+    //             //                         birthday: formatDate(birthday),
+    //             //                         email: email,
+    //             //                         avatar: avatar,
+    //             //                         headers: {
+    //             //                             Authorization: `Token 27dbb4dd8299792c8c52022f829da4ecec22f437`
+    //             //                         }
+    //             //                     })
+    //             //                 }
+    //             //             });
+    //             //         }
+    //             //     });
+
+                    
+    //             dispatch({
+    //                 type: actionTypes.LOGIN_SUCCESS,
+    //                 payload: avatar,
+    //                 isLoggedIn: isLoggedIn, 
+    //                 avatar: avatar
+    //             })
+    //             // }
+    //         })
+    //         .catch(error => {
+    //             console.log(error);
+    //             return;
+    //         });
+    //     } else {
+    //         dispatch({
+    //             type: actionTypes.LOGIN_FAIL,
+    //             isLoggedIn: isLoggedIn,
+    //             error: true,
+    //             payload: new Error('Ошибка авторизации')
+    //         })
+    //     }
+    // }, 22) // запрос прав на доступ к photo
   }
 }
 
@@ -223,6 +327,21 @@ export const handleLogout = (isLoggedIn) => {
 
         //eslint-disable-next-line no-undef
         VK.Auth.logout() // запрос прав на доступ к photo
+        // axios.get('http://localhost:8000/api/account/logout/', {withCredentials: true}).then((response) => {
+        //     console.log(response);
+        // })
+        // .catch(error => {
+        //     console.log(error);
+        //     return;
+        // });
+        const response = axiosInstance.post('/blacklist/', {
+            "refresh_token": localStorage.getItem("refresh_token")
+        });
+        localStorage.removeItem('access_token');
+        localStorage.removeItem('refresh_token');
+        axiosInstance.defaults.headers['Authorization'] = null;
+            // return response;
+
         dispatch({
             type: actionTypes.LOGOUT,
             isLoggedIn: false

@@ -28,38 +28,40 @@ export default class ArticleListView extends Component {
         .then((res)=>{
             console.log(res.data.message);
             const timeAndDateArr = []
-            res.data.data.map((item)=>{
+            if (res.data.data) {
+                res.data.data.map((item)=>{
 
-                let a = item.created_at
-                let date_time = a.split("T")
+                    let a = item.created_at
+                    let date_time = a.split("T")
 
-                let date = date_time[0].split("-")
-                let year = date[0]
-                let month = date[1]
-                let day = date[2]
+                    let date = date_time[0].split("-")
+                    let year = date[0]
+                    let month = date[1]
+                    let day = date[2]
 
-                date = `${day}-${month}-${year}`
-                var H = +date_time[1].substr(0, 2);
-                var h = H % 12 || 12;
-                var ampm = (H < 12 || H === 24) ? "AM" : "PM";
-                var timeString = h + date_time[1].substr(2, 3) + ampm;
+                    date = `${day}-${month}-${year}`
+                    var H = +date_time[1].substr(0, 2);
+                    var h = H % 12 || 12;
+                    var ampm = (H < 12 || H === 24) ? "AM" : "PM";
+                    var timeString = h + date_time[1].substr(2, 3) + ampm;
 
-                let obj = {
-                    time: timeString,
-                    date: date
-                }
+                    let obj = {
+                        time: timeString,
+                        date: date
+                    }
 
-                timeAndDateArr.push(obj)
+                    timeAndDateArr.push(obj)
 
-            })
+                })
 
-            console.log(timeAndDateArr);
+                console.log(timeAndDateArr);
 
 
-            this.setState({
-                articles : res.data.data,
-                dateTime : timeAndDateArr
-            })
+                this.setState({
+                    articles : res.data.data,
+                    dateTime : timeAndDateArr
+                })
+            }
         })
     }
 

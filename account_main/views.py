@@ -1,8 +1,15 @@
-from django.shortcuts import render
+from django.shortcuts import render, get_object_or_404
 from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-# from django.views.generic import CreateView
-from account_main.models import User
+from rest_framework.views import APIView
+from rest_framework.response import Response
+
+# from rest_framework.authtoken.views import ObtainAuthToken
+# from rest_framework.authtoken.models import Token
+from django.contrib.auth import logout, get_user_model
+from rest_framework.permissions import AllowAny
+
+from account_main.models import AppUser
 import jwt
 import bcrypt
 import json
@@ -13,6 +20,29 @@ from django.utils.decorators import method_decorator
 from account_main import forms
 import datetime
 import json
+
+# from .serializers import MyTokenObtainPairSerializer, AppUserSerializer
+# from rest_framework_simplejwt.tokens import RefreshToken
+
+
+# Google: django class based views
+
+# class RegistrationView(CreateView):
+#     def get_object(self, object, id):
+#         return User.objects.get(user_id=id)
+
+#     def get(self, request):
+#         existing_user = self.get_object(request.POST.get("user_id"))
+
+#     def post(self, request):
+#         pass
+
+class LogoutSessionView(APIView):
+
+    def post(self, request, *args, **kwargs):
+        logout(request)
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
 
 # Create your views here.
 @csrf_exempt
@@ -101,42 +131,116 @@ def signin(request):
             errMessage = f"Oops! {sys.exc_info()[1]}"
             return JsonResponse({'err':'true', 'message' : errMessage})
 
+# +79126017665
+# Zxcvbn1029
 
-# @method_decorator(csrf_exempt, name='dispatch')
-# class UserDataView(CreateView):
-#     model = User
-#     form_class = forms.UserDataForm
+class AppUserCreate(APIView):
+    permission_classes = (AllowAny,)
+
+    def post(self, request, format='json'):
+        serializer = AppUserSerializer(data=request.data)
+        if serializer.is_valid():
+            user = serializer.save()
+            if user:
+                json = serializer.data
+                return Response(json, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+# class LogoutAndBlacklistRefreshTokenForUserView(APIView):
+#     permission_classes = (AllowAny,)
+#     authentication_classes = ()
+
+#     def post(self, request):
+#         try:
+#             refresh_token = request.data["refresh_token"]
+#             token = RefreshToken(refresh_token)
+#             token.blacklist()
+#             return Response(status=status.HTTP_205_RESET_CONTENT)
+#         except Exception as e:
+#             return Response(status=status.HTTP_400_BAD_REQUEST)
+
+
+class LoginView(APIView):
+    def post(self, request):
+        success = False
+        params = request.data
+        print("PPPPPPPPARAMAS:    ", params)
+        if request.session.get("token") == None and params != {}:
+            request.session['token'] = params.get("token")
+            
+            request.session.modified = True
+            success = True
+
+        return Response({"user": "asdasd"})
+
+class LogoutView(APIView):
+    def get(self, request):
+        success = False
+        print("СЕССИЯ: ", request.session)
+        if request.session.get("token"):
+            print("РАЗ        ЛОГИНИВАЕМСЯ", request.session.get("token"))
+            del request.session['token']
+            success = True
+
+        return Response({"user": "asdasd"})
+
+@csrf_exempt
+def login(request):
+    success = False
+    params = json.loads(request.body)
+    if request.method == 'POST' and request.session.get("token") == None and params != {}:
+        request.session['token'] = params.get("token")
+        
+        request.session.modified = True
+        success = True
+        
+    return JsonResponse({'status': 'ok', 'success': success})
+
+@csrf_exempt
+def logout(request):
+    success = False
+    print("СЕССИЯ: ", request.session)
+    if request.method == 'GET' and request.session.get("token"):
+        print("ИЗИ РАЗ        ЛОГИНИМСЯ", request.session.get("token"))
+        del request.session['token']
+        success = True
+
+    return JsonResponse({'status': 'ok', 'success': success})
 
 @csrf_exempt
 def set_user_data(request):
+    success = False
     request_params = json.loads(request.body.decode('utf-8'))
-    print("FFFFFFFF:     " ,request_params)
+    print("REQUESSSSSSSSSSSST: ", json.loads(request.body.decode('utf-8')))
     if request.method == 'POST':
         user_id = request_params.get("user_id")
         first_name = request_params.get("first_name")
+        print("DDDDDDDDD:     ", first_name)
         last_name = request_params.get("last_name")
         username = "USERNAME"
         email = request_params.get("email")
+
         
+        user, created = User.objects.get_or_create(user_id=request_params.get("user_id"))
+
         birthday = '2000-1-1'
-        if request_params.get("birthday"):
-            birthday = date_obj = datetime.datetime.strptime(request_params.get("birthday"), "%Y/%m/%d")
+        if request_params.get("birthday") != "":
+            birthday = request_params.get("birthday")
 
         phone = request_params.get("phone")
         avatar = request_params.get("avatar")
 
-        
-        user = User(
-            user_id=user_id,
-            first_name=first_name,
-            last_name=last_name,
-            username=username,
-            email=email,
-            birthday=birthday,
-            phone=phone,
-            avatar=avatar
-        )
-        
-        # user.save()
+        user.first_name = first_name
+        user.last_name = last_name
+        user.username = username
+        user.email = email
+        user.birthday = birthday
+        user.phone = phone
+        user.avatar = avatar
 
-        return JsonResponse({'success': True})
+        user.save()
+
+        success = True
+
+    return JsonResponse({'success': success})

@@ -2,8 +2,7 @@ import React, { Component } from 'react'
 import {
     Form,
     Input,
-    Button,
-    Spin
+    Button
 } from 'antd';
 import { LoadingOutlined, UserOutlined, LockOutlined } from '@ant-design/icons';
 import { Redirect } from 'react-router-dom'

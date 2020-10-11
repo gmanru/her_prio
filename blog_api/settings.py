@@ -40,6 +40,10 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'rest_framework',
+    'rest_framework.authtoken',
+    'social_django',
+    'rest_social_auth',
     'allauth',
     'allauth.account',
     'allauth.socialaccount',
@@ -50,9 +54,26 @@ INSTALLED_APPS = [
 ]
 
 AUTHENTICATION_BACKENDS = (
+    'social_core.backends.vk.VKOAuth2',
     'django.contrib.auth.backends.ModelBackend',
-    'allauth.account.auth_backends.AuthenticationBackend',
+    # 'allauth.account.auth_backends.Authenti   cationBackend',
 )
+
+SOCIAL_AUTH_PIPELINE = (
+    'users.social_pipeline.auto_logout',  # custom action
+    'social_core.pipeline.social_auth.social_details',
+    'social_core.pipeline.social_auth.social_uid',
+    'social_core.pipeline.social_auth.auth_allowed',
+    'users.social_pipeline.check_for_email',  # custom action
+    'social_core.pipeline.social_auth.social_user',
+    'social_core.pipeline.user.get_username',
+    'social_core.pipeline.user.create_user',
+    'social_core.pipeline.social_auth.associate_user',
+    'social_core.pipeline.social_auth.load_extra_data',
+    'social_core.pipeline.user.user_details',
+    'users.social_pipeline.save_avatar',  # custom action
+)
+
 
 MIDDLEWARE = [
     'corsheaders.middleware.CorsMiddleware',
@@ -65,9 +86,47 @@ MIDDLEWARE = [
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
 ]
 
+# SESSION_ENGINE = 'django.contrib.sessions.backends.db'
+
+REST_FRAMEWORK = {
+    # 'DEFAULT_AUTHENTICATION_CLASSES': (
+    #     'rest_framework_simplejwt.authentication.JWTAuthentication',
+    # ),
+    'DEFAULT_PERMISSION_CLASSES': [
+        # 'rest_framework.authentication.BasicAuthentication',
+        'rest_framework.permissions.IsAuthenticated',
+    ]
+}
+
+# import datetime
+# SIMPLE_JWT = {
+#     'ACCESS_TOKEN_LIFETIME': datetime.timedelta(minutes=5),
+#     'REFRESH_TOKEN_LIFETIME': datetime.timedelta(days=14),
+#     'ROTATE_REFRESH_TOKENS': True,
+#     'BLACKLIST_AFTER_ROTATION': False,
+#     'ALGORITHM': 'HS256',
+#     'SIGNING_KEY': SECRET_KEY,
+#     'VERIFYING_KEY': None,
+#     'AUTH_HEADER_TYPES': ('JWT',),
+#     'USER_ID_FIELD': 'id',
+#     'USER_ID_CLAIM': 'user_id',
+#     'AUTH_TOKEN_CLASSES': ('rest_framework_simplejwt.tokens.AccessToken',),
+#     'TOKEN_TYPE_CLAIM': 'token_type',
+# }
+SIMPLE_JWT = {
+    'AUTH_TOKEN_CLASSES': (
+        'rest_framework_simplejwt.tokens.AccessToken',
+        'rest_framework_simplejwt.tokens.SlidingToken',
+    ),
+}
+
+
+
 ROOT_URLCONF = 'blog_api.urls'
-LOGIN_REDIRECT_URL = "/vktest/"
-ACCOUNT_LOGOUT_REDIRECT_URL ='/vktest/' 
+# LOGIN_REDIRECT_URL = "/vktest/"
+# ACCOUNT_LOGOUT_REDIRECT_URL ='/vktest/' 
+# REST_SOCIAL_OAUTH_REDIRECT_URI = '/'
+# REST_SOCIAL_DOMAIN_FROM_ORIGIN = True
 
 TEMPLATES = [
     {
@@ -80,6 +139,9 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'account_main.context_preprocessors.backends',
+                'social_django.context_processors.backends',
+                'social_django.context_processors.login_redirect',
             ],
         },
     },
@@ -151,3 +213,13 @@ STATICFILES_DIRS = [
     os.path.join(BASE_DIR, 'build/static'),
 ]
 
+SOCIAL_AUTH_VK_OAUTH2_KEY = '7320659'
+SOCIAL_AUTH_VK_OAUTH2_SECRET = '214c8717214c8717214c871776212333442214c214c87177f0a14b2eabdc0f212bddca3'
+
+SOCIAL_AUTH_VK_OAUTH2_SCOPE = ['email']
+SOCIAL_AUTH_URL_NAMESPACE = 'social'
+# LOGIN_URL = '/login/vk-oauth2/'
+# LOGIN_REDIRECT_URL = '/'
+# LOGOUT_REDIRECT_URL = '/'
+
+AUTH_USER_MODEL = 'account_main.AppUser'

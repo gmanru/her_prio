@@ -3,7 +3,7 @@ from django.http import JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.core.serializers import serialize
 from blog.models import Article, Comment
-from account_main.models import User
+from account_main.models import AppUser
 from blog.forms import ArticleForm
 from django.forms.models import modelform_factory
 from functools import wraps

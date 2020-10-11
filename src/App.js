@@ -6,7 +6,7 @@ import { BrowserRouter } from 'react-router-dom'
 import { connect } from 'react-redux'
 import * as actions from './store/actions/Auth'
 import BaseRoute from './route';
-import {Helmet} from "react-helmet";
+// import {Helmet} from "react-helmet";
 // import Prism from 'prismjs'
 // import 'prismjs/themes/prism-okaidia.css'
 // import 'prismjs/components/prism-handlebars.min.js'
